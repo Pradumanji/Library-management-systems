@@ -2,14 +2,10 @@
 #include <bits/stdc++.h>
 #include<conio.h>
 using namespace std;
-
-
-
 class book
 {
 protected:
     string author_name,publication_year,branch,book_name,book_id;
-   // int no_of_same_book;
 public:
     book()
     {
@@ -18,15 +14,13 @@ public:
         branch="";
         book_name="";
         book_id="";
-       // no_of_same_book=0;
     }
     void add_book();
-    void remove_book(string t);
-    void update_book(string t);
-    int search_book(string t);
-    void list_book();
-    void disp_book();
     void storebook();
+    void disp_book();
+    int search_book(string t);
+    void update_book(string t);
+    void remove_book(string t);
     void disp_all_book();
 
 };
@@ -45,46 +39,58 @@ public:
     }
     bool validate_student(string,string);
     void get_student_data();
-    void disp_all_student();
     void disp_student();
     void borrow_book();
     void return_book();
+    void disp_student_info();
 };
-////////////////////////////////////////////////////////////////remove book /////////////////////////////////////////////
-void book::remove_book(string t)
+/////////////////////////////////////////////////// verify librarian /////////////////////////////////////////////////////////////
+bool validate_librarian(string user_id,string pass)
 {
-    ifstream fin;
-    ofstream fout;
-    fin.open("file3.dat",ios::in|ios::binary);
-    if(!fin)
-        cout<<"\n File not found!";
+    if(user_id=="mca" && pass=="12580")
+        return true;
     else
-    {
-        getch();
-        fout.open("tempfile.dat",ios::out);
-        fin.read((char*)this,sizeof(*this));
-        while(!fin.eof())
-        {
-            if(!(book_name==t))
-                fout.write((char*)this,sizeof(*this));
-            fin.read((char*)this,sizeof(*this));
-        }
-        fin.close();
-        fout.close();
-        getch();
-        remove("file3.dat");
-        getch();
-        rename("tempfile.dat","file3.dat");
-        cout<<"\n SUCCESSFULLY DELETED! ";
-    }
+        return false;
 }
+//////////////////////////////////////////////// Add book ////////////////////////////////////////////////////////////////////
+void book::add_book()
+{
+
+    cout<<"ENTER BOOK NAME=";
+    cin>>book_name;
+    cout<<"ENTER BOOK ID=";
+    cin>>book_id;
+    cout<<"ENTER BOOK AUTHOR NAME=";
+    cin>>author_name;
+    cout<<"ENTER BOOK PUBLICATION YEAR=";
+    cin>>publication_year;
+    cout<<"ENTER BRANCH NAME OF BOOK=";
+    cin>>branch;
+    storebook();
+}
+////////////////////////////////////////////// Book Store ////////////////////////////////////////////////////////////////////////
+void book::storebook()
+{
+    fstream fout;
+    fout.open("file.dat",ios::app|ios::binary);
+    fout.write((char*)this,sizeof(*this));
+    fout.close();
+}
+///////////////////////////////////////////////// display single book /////////////////////////////////////////////////////////////
+void book::disp_book()
+{
+    cout<<"\n Book id : "<<book_id<<"\n Book Name : "<<book_name<<"\n Author name : "<<author_name<<"\n Branch : "<<branch<<"\n Publication year : "<<publication_year
+        <<endl;
+
+}
+
 ////////////////////////////////////////////////// Search book //////////////////////////////////////////////////////////////////
 
 int book::search_book(string t)
 {
     int count=0;
-    ifstream fin;
-    fin.open("file3.dat",ios::in|ios::binary);
+    fstream fin;
+    fin.open("file.dat",ios::in|ios::binary);
     if(!fin)
         cout<<"\n file not found!";
     else
@@ -94,7 +100,9 @@ int book::search_book(string t)
         {
             if((t==book_name))
             {
+                cout<<"\n**********************************************************************\n";
                 disp_book();
+                cout<<"\n**********************************************************************\n";
                 count++;
             }
             fin.read((char*)this,sizeof(*this));
@@ -109,21 +117,67 @@ int book::search_book(string t)
         fin.close();
     }
 }
-////////////////////////////////////////////// Book Store ////////////////////////////////////////////////////////////////////////
-void book::storebook()
-{
-    ofstream fout;
-    fout.open("file3.dat",ios::app|ios::binary);
-    fout.write((char*)this,sizeof(*this));
-    fout.close();
-}
-////////////////////////////////////////////// Book Store ////////////////////////////////////////////////////////////////////////
 
+////////////////////////////////////////////////// update book function //////////////////////////////////////////
+void book::update_book(string t)
+{
+    fstream file1;
+    file1.open("file.dat",ios::in|ios::out|ios::ate|ios::binary);
+    file1.seekg(0);
+    file1.read((char*)this,sizeof(*this));
+    while(!file1.eof())
+    {
+        if(t==book_name)
+        {
+            cout<<"ENTER BOOK NAME=";
+            cin>>book_name;
+            cout<<"ENTER BOOK ID=";
+            cin>>book_id;
+            cout<<"ENTER BOOK AUTHOR NAME=";
+            cin>>author_name;
+            cout<<"ENTER BOOK PUBLICATION YEAR=";
+            cin>>publication_year;
+            cout<<"ENTER BRANCH NAME OF BOOK=";
+            cin>>branch;
+            file1.seekp(file1.tellp()-sizeof(*this));
+            file1.write((char*)this,sizeof(*this));
+        }
+        file1.read((char*)this,sizeof(*this));
+    }
+    file1.close();
+    cout<<"\n SUCCESSFULLY UPDATED!";
+}
+
+////////////////////////////////////////////////////////////////remove book /////////////////////////////////////////////
+void book::remove_book(string t)
+{
+    fstream fin;
+    fstream fout;
+    fin.open("file.dat",ios::in|ios::binary);
+    if(!fin)
+        cout<<"\n File not found!";
+    else
+    {
+        fout.open("tempfile.dat",ios::out);
+        fin.read((char*)this,sizeof(*this));
+        while(!fin.eof())
+        {
+            if(!(book_name==t))
+                fout.write((char*)this,sizeof(*this));
+            fin.read((char*)this,sizeof(*this));
+        }
+        fin.close();
+        fout.close();
+        remove("file.dat");
+        rename("tempfile.dat","file.dat");
+        cout<<"\n SUCCESSFULLY DELETED! ";
+    }
+}
 ///////////////////////////////////////////// Display all books/////////////////////////////////////////////////////////////////
 void book::disp_all_book()
 {
-    ifstream fin;
-    fin.open("file3.dat",ios::in|ios::app);
+    fstream fin;
+    fin.open("file.dat",ios::in);
     if (!fin)
         cout<<"\n File not found!";
     else
@@ -138,24 +192,100 @@ void book::disp_all_book()
         }
         fin.close();
     }
-
-
 }
-///////////////////////////////////////////////// display single book /////////////////////////////////////////////////////////////
-void book::disp_book()
+//////////////////////////////////////////////////// verify Student //////////////////////////////////////////////////////////////
+bool student::validate_student(string user_id,string pass)
 {
-    cout<<"\n Book id : "<<book_id<<"\n Book Name : "<<book_name<<"\n Author name : "<<author_name<<"\n Branch : "<<branch<<"\n Publication year : "<<publication_year
-        <<endl;
-
-}
-
-
-void student::disp_all_student()
-{
-
-
+    int count=0;
     fstream fin;
-    fin.open(student_id+".dat",ios::in|ios::binary|ios::app);
+    fin.open(user_id+".dat",ios::in|ios::out|ios::binary|ios::app);
+    if(!fin)
+    {
+        cout<<"INVALID USER ID"<<endl;
+        return 0;
+    }
+    fin.read((char*)this,sizeof(*this));
+    while(!fin.eof())
+    {
+        if(pass==mob_no)
+        {
+            return 1;
+            count++;
+        }
+        fin.read((char*)this,sizeof(*this));
+    }
+    fin.close();
+
+    if(count==0)
+    {
+        cout<<"INVALID PASSWORD"<<endl;
+        return 0;
+    }
+}
+void student::get_student_data()
+{
+    fstream fout;
+    cout<<"ENTER STUDENT NAME=";
+    cin>>student_name;
+    cout<<"ENTER REG NO=";
+    cin>>student_id;
+    cout<<"ENTER SESSION=";
+    cin>>student_session;
+    cout<<"ENTER BRANCH=";
+    cin>>student_branch;
+    cout<<"ENTER MOBILE NO=";
+    cin>>mob_no;
+    cout<<"\nUSE REG NO AS USER ID AND MOB NO AS PASSWORD!\n";
+    fout.open(student_id+".dat",ios::out);
+    fout.write((char*)this,sizeof(*this));
+    fout.close();
+
+
+}
+///////////////////////////////////////////////// display student /////////////////////////////////////////////////////////////
+void student::disp_student()
+{
+    cout<<"student name="<<student_name<<"\nreg no="<<student_id<<"\nstudent session="<<student_session<<"\nbranch="<<student_branch<<"\ndate of book issue="<<date_of_issue<<"\ndate of book return="<<date_of_return;
+}
+
+///////////////////////////////////////////////Borrow book function///////////////////////////////////////////////////////////////////////
+void student::borrow_book()
+{
+
+    cout<<"ENTER BOOK NAME=";
+    cin>>book_name;
+    int t=search_book(book_name);
+    if(t==0  )
+        cout<<"BOOK NOT FOUND"<<endl;
+    else
+    {
+        cout<<"ENTER DATE OF BOOK ISSUE=";
+        cin>>date_of_issue;
+        fstream fout;
+        fout.open(student_id+".dat",ios::out|ios::binary);
+        fout.write((char*)this,sizeof(*this));
+        fout.close();
+
+    }
+
+}
+
+/////////////////////////////////////////////////return book //////////////////////////////////////////////////////////////////
+void student::return_book()
+{
+    cout<<"ENTER DATE OF BOOK RETURN=";
+    cin>>date_of_return;
+    fstream fout;
+    fout.open(student_id+".dat",ios::out|ios::binary);
+    fout.write((char*)this,sizeof(*this));
+    fout.close();
+}
+
+
+void student::disp_student_info()
+{
+    fstream fin;
+    fin.open(student_id+".dat",ios::in|ios::binary);
     if (!fin)
         cout<<"\n file not found!";
     else
@@ -173,186 +303,6 @@ void student::disp_all_student()
 
 
 }
-///////////////////////////////////////////////// display single book /////////////////////////////////////////////////////////////
-void student::disp_student()
-{
-    cout<<"student name="<<student_name<<"\nreg no="<<student_id<<"\nstudent session="<<student_session<<"\nbranch="<<student_branch<<"\ndate of book issue="<<date_of_issue<<"\ndate of book return="<<date_of_return;
-}
-/////////////////////////////////////////////////return book //////////////////////////////////////////////////////////////////
-void student::return_book()
-{
-    cout<<"ENTER DATE OF BOOK RETURN=";
-    cin>>date_of_return;
-    ofstream fout;
-    fout.open(student_id+".dat",ios::out|ios::binary|ios::app);
-    //fout<<book_name<<date_of_issue;
-    fout.write((char*)this,sizeof(*this));
-    fout.close();
-}
-///////////////////////////////////////////////Borrow book function///////////////////////////////////////////////////////////////////////
-void student::borrow_book()
-{
-    cout<<"ENTER BOOK NAME=";
-    cin>>book_name;
-    int t=search_book(book_name);
-    if(t==0  )
-        cout<<"BOOK NOT FOUND"<<endl;
-    else
-    {
-       // no_of_same_book--;
-        cout<<"ENTER DATE OF BOOK ISSUE=";
-        cin>>date_of_issue;
-        ofstream fout;
-        fout.open(student_id+".dat",ios::out|ios::binary|ios::app);
-        //fout<<book_name<<date_of_issue;
-        fout.write((char*)this,sizeof(*this));
-        fout.close();
-
-    }
-
-
-
-}
-
-/////////////////////////////////////////////////Return book //////////////////////////////////////////////////////////////////
-
-///////////////////////////////////////////////Borrow book function///////////////////////////////////////////////////////////////////////
-/*void book::borrow_book()
-{
-    cout<<"ENTER BOOK NAME=";
-    cin>>book_name;
-    cout<<"ENTER BOOK AUTHOR NAME=";
-    cin>>author_name;
-    cout<<"ENTER BRANCH NAME OF BOOK=";
-    cin>>branch;
-    no_of_same_book--;
-
-}*/
-//////////////////////////////////////////////// Add book ////////////////////////////////////////////////////////////////////
-void book::add_book()
-{
-
-    cout<<"ENTER BOOK NAME=";
-    cin>>book_name;
-    // getline(cin,book_name);
-    cout<<"ENTER BOOK ID=";
-    cin>>book_id;
-
-    cout<<"ENTER BOOK AUTHOR NAME=";
-    cin>>author_name;
-    //getline(cin,author_name);
-    cout<<"ENTER BOOK PUBLICATION YEAR=";
-    cin>>publication_year;
-    cout<<"ENTER BRANCH NAME OF BOOK=";
-    cin>>branch;
-   // cout<<"ENTER NO OF BOOKS=";
-  //  cin>>no_of_same_book;
-    storebook();
-}
-////////////////////////////////////////////////// update book function /////////////////////////////////////////////////////////
-void book::update_book(string t)
-{
-    fstream file1;
-    file1.open("file3.dat",ios::in|ios::out|ios::ate|ios::binary);
-    file1.seekg(0);
-    file1.read((char*)this,sizeof(*this));
-    while(!file1.eof())
-    {
-        if(t==book_name)
-        {
-           /* cout<<"ENTER BOOK NAME=";
-            cin>>book_name;
-            // getline(cin,book_name);
-            cout<<"ENTER BOOK ID=";
-            cin>>book_id;
-
-
-            cout<<"ENTER BOOK AUTHOR NAME=";
-            cin>>author_name;
-            //getline(cin,author_name);
-            cout<<"ENTER BOOK PUBLICATION YEAR=";
-            cin>>publication_year;
-            cout<<"ENTER BRANCH NAME OF BOOK=";
-            cin>>branch;
-            cout<<"ENTER NO OF BOOKS=";
-            cin>>no_of_same_book; */
-            add_book();
-            file1.seekp(file1.tellp()-sizeof(*this));
-            file1.write((char*)this,sizeof(*this));
-        }
-        file1.read((char*)this,sizeof(*this));
-    }
-    file1.close();
-    cout<<"\n SUCCESSFULLY UPDATED!";
-}
-/////////////////////////////////////////////////// verify librarian /////////////////////////////////////////////////////////////
-bool validate_librarian(string a,string b)
-{
-    if(a=="mca" && b=="12580")
-        return true;
-    else
-        return false;
-}
-//////////////////////////////////////////////////// verify Student //////////////////////////////////////////////////////////////
-bool student::validate_student(string a,string b)
-{
-    /* pair<string,string> pr;
-     pr= {a,b};
-     vector<pair<string,string>> student;
-     student.push_back({"sweety","1411999"});
-     student.push_back({"sakshi","281999"});
-     student.push_back({"praduman","1672001"});
-     for(auto it:student)
-     {
-         //cout<<it.first<<" "<<it.second<<endl;
-         auto pr1=it;
-         if(pr1==pr)
-             return true;
-     }
-     return false;*/
-
-
-
-    ifstream fin;
-    fin.open(a+".dat");
-    if(!fin)
-    {
-        cout<<"INVALID USER ID"<<endl;
-        return 0;
-    }
-    if(b==mob_no)
-        return 1;
-    else
-    {
-        cout<<"INVALID PASSWORD"<<endl;
-        return 0;
-    }
-}
-
-
-void student::get_student_data()
-{
-    //student s;
-    ofstream fout;
-    cout<<"ENTER STUDENT NAME=";
-    cin>>student_name;
-    cout<<"ENTER REG NO=";
-    cin>>student_id;
-    cout<<"ENTER SESSION=";
-    cin>>student_session;
-    cout<<"ENTER BRANCH=";
-    cin>>student_branch;
-    cout<<"ENTER MOBILE NO=";
-    cin>>mob_no;
-    cout<<"\nUSE REG NO AS USER ID AND MOB NO AS PASSWORD\n";
-    fout.open(student_id+".dat",ios::out);
-    fout.write((char*)this,sizeof(*this));
-    //fout<<"name="<<student_name<<endl<<"reg no="<<student_id<<endl<<"session="<<student_session<<endl<<"branch="<<student_branch<<endl<<"mobile no="<<mob_no<<endl;
-    fout.close();
-
-
-}
-
 
 ////////////////////////////////////////////////////// librarian menu ///////////////////////////////////////////////////////////
 void LibrarianMenu()
@@ -512,7 +462,7 @@ menu:
                 {
                     string user,pass;
                     cout << "\n*******STUDENT LOGIN*******" << endl;
-                    cout<<"1.ENTER USERNAME=";
+                    cout<<"1.ENTER REG. NO =";
                     cin>>user;
                     cout<<"2.ENTER PASSWORD=";
                     cin>>pass;
@@ -535,11 +485,11 @@ menu:
                             {
                             case 1:
                                 s1.borrow_book();
-                                s1.disp_all_student();
+                                s1.disp_student_info();
                                 break;
                             case 2:
                                 s1.return_book();
-                                s1.disp_all_student();
+                                s1.disp_student_info();
                                 break;
                             case 3:
                                 b1.disp_all_book();
